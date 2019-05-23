@@ -1,6 +1,6 @@
-#define Threshold 600
+#define Threshold 550
 #define LEDPIN_COUNT 7
-
+#define SENSOR 15
 //MUX 設定
 const int controlPin[4] = {3, 4, 5, 6};
 const int SIG_pin = 14;
@@ -23,7 +23,6 @@ const int muxChannel[16][4] = {
   {1, 1, 1, 1} //channel 15
 };
 
-const int PIN[5] = {0, 1, 2, 3, 4};
 const int LEDPIN[LEDPIN_COUNT] = {7, 8, 9, 10, 11, 12, 13};
 
 void setup() {
@@ -38,10 +37,10 @@ void setup() {
 }
 
 void loop() {
-  int juzu[5];
-  int pinread [5];
-  for (int i = 0; i < 5; i++) {
-    pinread[i] = readMux(PIN[i]);
+  int juzu[SENSOR];
+  int pinread [SENSOR];
+  for (int i = 0; i < SENSOR; i++) {
+    pinread[i] = readMux(i);
     //    Serial.print(pinread[i]);
     //    Serial.print(" ");
     if (pinread[i] >= Threshold) {
@@ -51,7 +50,6 @@ void loop() {
     }
   }
   //  Serial.println("");
-
   int ledswitch[LEDPIN_COUNT] = {1, 1, 1, 1, 1, 1, 1};
   if (juzu[1] == 0) {
     ledswitch[2] = 0;
@@ -76,24 +74,31 @@ void loop() {
     digitalWrite(LEDPIN[i], ledswitch[i]);
   }
 
-  int count = 0;
-  if (juzu[1] == 0) {
-    count = 0;
-  } else if (juzu[2] == 0) {
-    count = 1;
-  } else if (juzu[3] == 0) {
-    count = 2;
-  } else if (juzu[4] == 0) {
-    count = 3;
-  } else {
-    count = 4;
+  int count[SENSOR / 5];
+  int amount = 0;
+  for (int i = 0; i < SENSOR / 5; i++) {
+    if (juzu[1 + i * 5] == 0) {
+      count[i] = 0;
+    } else if (juzu[2 + i * 5] == 0) {
+      count[i] = 1;
+    } else if (juzu[3 + i * 5] == 0) {
+      count[i] = 2;
+    } else if (juzu[4 + i * 5] == 0) {
+      count[i] = 3;
+    } else {
+      count[i] = 4;
+    }
+    if (juzu[0 + i * 5] == 1) {
+      count[i] += 5;
+    }
   }
-  if (juzu[0] == 1) {
-    count += 5;
+  for (int i = 0; i < 3; i++) {
+    Serial.print(count[i]);
   }
-
-  Serial.println(count);
-  Serial.write(count);
+  Serial.println();
+//  amount = count[0] + count[1] * 10 + count[2] * 100;
+//  Serial.println(amount);
+  Serial.write(amount);
   delay(100);
 }
 
