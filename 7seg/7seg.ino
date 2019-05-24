@@ -1,8 +1,8 @@
 const int DATAPIN[3] = {4, 7, 10};
 const int LATCHPIN[3] = {5, 8, 11};
 const int CLOCKPIN[3] = {6, 9, 12};
-const int KETA = 3;
-const int number[11][8] = {
+const int KETA = 3; //桁数
+const int number[11][8] = { //7セグに表示する数字
   {0, 1, 1, 1, 1, 1, 1, 0}, //0
   {0, 0, 0, 1, 0, 0, 1, 0}, //1
   {1, 0, 1, 1, 1, 1, 0, 0}, //2
@@ -54,7 +54,6 @@ void loop() {
     delay(10);
   }
 }
-
 
 void output(int num, int keta) {
   digitalWrite(LATCHPIN[keta - 1], LOW);
