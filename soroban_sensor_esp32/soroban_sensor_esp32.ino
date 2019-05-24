@@ -2,8 +2,8 @@
 #define LEDPIN_COUNT 7 //出力するLEDのピン数
 #define SENSOR 15 //フォトリフレクタの数
 //MUX 設定
-const int controlPin[4] = {3, 4, 5, 6};
-const int SIG_pin = 14; 
+const int controlPin[4] = {16, 17, 18, 19};
+const int SIG_pin = 4;
 const int muxChannel[16][4] = {  //MUXのチャネル
   {0, 0, 0, 0}, //channel 0
   {1, 0, 0, 0}, //channel 1
@@ -23,7 +23,7 @@ const int muxChannel[16][4] = {  //MUXのチャネル
   {1, 1, 1, 1} //channel 15
 };
 
-const int LEDPIN[LEDPIN_COUNT] = {7, 8, 9, 10, 11, 12, 13}; //LEDピンの設定 
+const int LEDPIN[LEDPIN_COUNT] = {13, 14, 27, 26, 25, 33, 32}; //LEDピンの設定
 
 void setup() {
   Serial.begin(115200);
@@ -37,19 +37,19 @@ void setup() {
 }
 
 void loop() {
-  int juzu[SENSOR]; 
+  int juzu[SENSOR];
   int pinread [SENSOR];
   for (int i = 0; i < SENSOR; i++) {
-    pinread[i] = readMux(i);
-    //    Serial.print(pinread[i]);
-    //    Serial.print(" ");
+    pinread[i] = map(readMux(i), 0, 5000, 0, 1023);
+//    Serial.print(pinread[i]);
+//    Serial.print(" ");
     if (pinread[i] >= Threshold) { //センサーに珠があるかどうか
       juzu[i] = 1; //ある
     } else {
       juzu[i] = 0; //ない
     }
   }
-  //  Serial.println("");
+//  Serial.println("");
 
   //LEDへ出力するプログラム
   int ledswitch[LEDPIN_COUNT] = {1, 1, 1, 1, 1, 1, 1}; //LEDの出力情報
@@ -95,13 +95,13 @@ void loop() {
       count[i] += 5;
     }
   }
-  for (int i = 0; i < 3; i++) { 
-    Serial.print(count[i]);
+  for (int i = 0; i < 3; i++) {
+        Serial.print(count[i]);
   }
-  Serial.println();
-//  amount = count[0] + count[1] * 10 + count[2] * 100;
-//  Serial.println(amount);
-  Serial.write(amount); //シリアル送信 
+    Serial.println();
+  //  amount = count[0] + count[1] * 10 + count[2] * 100;
+  //  Serial.println(amount);
+  Serial.write(amount); //シリアル送信
   delay(100);
 }
 
