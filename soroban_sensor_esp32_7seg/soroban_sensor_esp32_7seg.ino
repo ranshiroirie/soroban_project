@@ -1,6 +1,25 @@
 #define Threshold 550 //センサーの域値
 #define LEDPIN_COUNT 7 //出力するLEDのピン数
-#define SENSOR 10 //フォトリフレクタの数
+#define SENSOR 15 //フォトリフレクタの数
+//桁の設定
+const int DATAPIN[3] = {13, 26, 21};
+const int LATCHPIN[3] = {14, 25, 22};
+const int CLOCKPIN[3] = {17, 33, 23};
+
+//7セグの配列
+const int number[11][8] = { //7セグに表示する数字
+  {0, 1, 1, 1, 1, 1, 1, 0}, //0
+  {0, 0, 0, 1, 0, 0, 1, 0}, //1
+  {1, 0, 1, 1, 1, 1, 0, 0}, //2
+  {1, 0, 1, 1, 0, 1, 1, 0}, //3
+  {1, 1, 0, 1, 0, 0, 1, 0}, //4
+  {1, 1, 1, 0, 0, 1, 1, 0}, //5
+  {1, 1, 1, 0, 1, 1, 1, 0}, //6
+  {0, 1, 1, 1, 0, 0, 1, 0}, //7
+  {1, 1, 1, 1, 1, 1, 1, 0}, //8
+  {1, 1, 1, 1, 0, 1, 1, 0}, //9
+  {0, 0, 0, 0, 0, 0, 0, 0} //OFF
+};
 //MUX 設定
 const int controlPin[4] = {16, 17, 18, 19};
 const int SIG_pin = 4;
@@ -23,16 +42,17 @@ const int muxChannel[16][4] = {  //MUXのチャネル
   {1, 1, 1, 1} //channel 15
 };
 
-const int LEDPIN[LEDPIN_COUNT] = {13, 14, 27, 26, 25, 33, 32}; //LEDピンの設定
-
 void setup() {
   Serial.begin(115200);
+
+  for (int i = 0; i < 3; i++) {
+    pinMode(DATAPIN[i], OUTPUT);
+    pinMode(LATCHPIN[i], OUTPUT);
+    pinMode(CLOCKPIN[i], OUTPUT);
+  }
   for (int i = 0; i < 4; i++) {
     pinMode(controlPin[i], OUTPUT);
     digitalWrite(controlPin[i], LOW);
-  }
-  for (int i = 0; i < LEDPIN_COUNT; i++) {
-    pinMode(LEDPIN[i], OUTPUT);
   }
 }
 
@@ -50,31 +70,6 @@ void loop() {
     }
   }
   Serial.println("");
-
-  //LEDへ出力するプログラム
-  int ledswitch[LEDPIN_COUNT] = {1, 1, 1, 1, 1, 1, 1}; //LEDの出力情報
-  if (juzu[1] == 0) {
-    ledswitch[2] = 0;
-  } else if (juzu[2] == 0) {
-    ledswitch[3] = 0;
-  } else if (juzu[3] == 0) {
-    ledswitch[4] = 0;
-  } else if (juzu[4] == 0) {
-    ledswitch[5] = 0;
-  } else {
-    ledswitch[6] = 0;
-  }
-  if (juzu[0] == 1) {
-    ledswitch[0] = 0;
-    ledswitch[1] = 1;
-  } else {
-    ledswitch[0] = 1;
-    ledswitch[1] = 0;
-  }
-
-  for (int i = 0; i < LEDPIN_COUNT; i++) {
-    digitalWrite(LEDPIN[i], ledswitch[i]);
-  }
 
   //数字に変換するプログラム
   int count[SENSOR / 5]; //数字の桁ごとの配列
@@ -95,14 +90,11 @@ void loop() {
       count[i] += 5;
     }
   }
-  for (int i = 0; i < 3; i++) {
-//        Serial.print(count[i]);
+  for (int i = 0; i < SENSOR / 5; i++) {
+    seven_seg(count[i], i);
   }
-    Serial.println();
-  //  amount = count[0] + count[1] * 10 + count[2] * 100;
-  //  Serial.println(amount);
-//  Serial.write(amount); //シリアル送信
-//  delay(100);
+  Serial.println();
+  //  delay(50);
 }
 
 int readMux(int channel) {
@@ -114,4 +106,18 @@ int readMux(int channel) {
   int val = analogRead(SIG_pin);
   //return the value
   return val;
+}
+
+void seven_seg(int num, int keta) {
+  digitalWrite(LATCHPIN[keta], LOW);
+  for (int i = 8; i >= 0; i--) {
+    digitalWrite(DATAPIN[keta], number[num][i] ? HIGH : LOW);
+    onoff(CLOCKPIN[keta]);
+  }
+  digitalWrite(LATCHPIN[keta], HIGH);
+}
+
+void onoff(int Pin) {
+  digitalWrite(Pin, HIGH);
+  digitalWrite(Pin, LOW);
 }
